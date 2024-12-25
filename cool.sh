@@ -542,6 +542,29 @@ echo " - Waiting for 20 seconds for Coolify (database migrations) to be ready."
 getAJoke
 
 sleep 20
+
+
+# Add function to create root user
+create_root_user() {
+    echo "Creating root user..."
+    # Try multiple times as the database might not be fully ready
+    for i in {1..5}; do
+        if docker exec coolify-app php artisan db:seed --class=CreateRootUserSeeder; then
+            echo "Root user created successfully."
+            return 0
+        else
+            echo "Attempt $i: Failed to create root user. Waiting 10 seconds before retry..."
+            sleep 10
+        fi
+    done
+    echo "Failed to create root user after multiple attempts."
+    return 1
+}
+
+# Call the function to create root user
+create_root_user
+
+
 echo -e "\033[0;35m
    ____                            _         _       _   _                 _
   / ___|___  _ __   __ _ _ __ __ _| |_ _   _| | __ _| |_(_) ___  _ __  ___| |
